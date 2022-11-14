@@ -93,10 +93,10 @@ func SelfUpdateWithLatestAndRestart(name string, version string, assetfilter str
 	}
 
 	if len(assets) == 0 {
-		return fmt.Errorf("no assets found with filter %s", assetfilter)
+		return fmt.Errorf("no assets found with filter %s in version %v", assetfilter, latestRelease.TagName)
 	}
 	if len(assets) > 1 {
-		return fmt.Errorf("multiple assets found with filter %s", assetfilter)
+		return fmt.Errorf("multiple assets found with filter %s in version %v", assetfilter, latestRelease.TagName)
 	}
 
 	asset := assets[0]
