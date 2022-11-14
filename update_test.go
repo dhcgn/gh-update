@@ -64,8 +64,8 @@ func TestSelfUpdateWithLatestAndRestart(t *testing.T) {
 
 type FileOperationsMock struct{}
 
-// CleanUpBackup implements internal.FileOperations
-func (*FileOperationsMock) CleanUpBackup(p string, pid string, try int) error {
+// RemoveExecutable implements internal.FileOperations
+func (*FileOperationsMock) RemoveExecutable(p string, pid string, try int) error {
 	return nil
 }
 

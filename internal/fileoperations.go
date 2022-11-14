@@ -22,13 +22,13 @@ type FileOperations interface {
 	SaveTo(data []byte, path string) error
 	MoveRunningExeToBackup(p string) error
 	MoveNewExeToOriginalExe(newPath string, oldPath string) error
-	CleanUpBackup(path string, pid string, try int) error
+	RemoveExecutable(path string, pid string, try int) error
 }
 
 type FileOperationsImpl struct {
 }
 
-func (f FileOperationsImpl) CleanUpBackup(path string, pid string, try int) error {
+func (f FileOperationsImpl) RemoveExecutable(path string, pid string, try int) error {
 	if _, err := os.Stat(path + oldfilesuffix); os.IsNotExist(err) {
 		return err
 	}
@@ -45,7 +45,7 @@ func (f FileOperationsImpl) CleanUpBackup(path string, pid string, try int) erro
 	if try < 10 {
 		d := time.Duration(try) * 100 * time.Millisecond
 		time.Sleep(d)
-		return f.CleanUpBackup(path, pid, try+1)
+		return f.RemoveExecutable(path, pid, try+1)
 	}
 	return err
 }

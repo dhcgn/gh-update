@@ -40,7 +40,7 @@ func GetOldPid() string {
 // A retry is done if the backup file is still in use.
 func CleanUpAfterUpdate(executablePath string, oldpid string) error {
 
-	return fops.CleanUpBackup(executablePath, oldpid, 1)
+	return fops.RemoveExecutable(executablePath, oldpid, 1)
 }
 
 // SelfUpdateWithLatestAndRestart updates the current executable with the latest release from github and restarts the application.
