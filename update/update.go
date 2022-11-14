@@ -18,6 +18,14 @@ var (
 	webop internal.WebOperations  = internal.WebOperationsImpl{}
 )
 
+const (
+	EnvFinishUpdate = internal.EnvFinishUpdate
+)
+
+func CleanUp(executablePath string) error {
+	return fops.CleanUpBackup(executablePath)
+}
+
 func SelfUpdateWithLatestAndRestart(name string, assetfilter string, runningexepath string) error {
 	// https://api.github.com/repos/dhcgn/workplace-sync/releases
 	u, err := url.JoinPath("https://api.github.com/repos/", name, "releases")
@@ -65,8 +73,7 @@ func SelfUpdateWithLatestAndRestart(name string, assetfilter string, runningexep
 	}
 
 	asset := assets[0]
-
-	fmt.Println("Asset:", asset)
+	// fmt.Println("Asset:", asset)
 
 	assetData, err := webop.GetAssetReader(asset.BrowserDownloadURL)
 	if err != nil {

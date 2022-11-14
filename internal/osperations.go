@@ -5,6 +5,10 @@ import (
 	"os/exec"
 )
 
+const (
+	EnvFinishUpdate = "FINISH_UPDATE"
+)
+
 var _ OsOperations = (*OsOperationsImpl)(nil)
 
 type OsOperations interface {
@@ -15,7 +19,7 @@ type OsOperationsImpl struct{}
 
 func (OsOperationsImpl) Restart(path string) error {
 	env := os.Environ()
-	env = append(env, "FINISH_UPDATE=1")
+	env = append(env, EnvFinishUpdate+"=1")
 	cmd := exec.Command(path)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
