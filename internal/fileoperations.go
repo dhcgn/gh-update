@@ -11,15 +11,24 @@ import (
 
 var _ FileOperations = (*FileOperationsImpl)(nil)
 
+const (
+	oldfilesuffix = ".old"
+)
+
 type FileOperations interface {
 	Unzip(zip []byte) (data []byte, err error)
 	CreateNewTempPath(p string) (newPath string, err error)
 	SaveTo(data []byte, path string) error
 	MoveRunningExeToBackup(p string) error
 	MoveNewExeToOriginalExe(newPath string, oldPath string) error
+	CleanUpBackup(p string) error
 }
 
 type FileOperationsImpl struct {
+}
+
+func (FileOperationsImpl) CleanUpBackup(p string) error {
+	return os.Remove(p + oldfilesuffix)
 }
 
 func (FileOperationsImpl) CreateNewTempPath(p string) (string, error) {
@@ -31,7 +40,7 @@ func (FileOperationsImpl) SaveTo(data []byte, path string) error {
 }
 
 func (FileOperationsImpl) MoveRunningExeToBackup(p string) error {
-	return os.Rename(p, p+".old")
+	return os.Rename(p, p+oldfilesuffix)
 }
 
 func (FileOperationsImpl) MoveNewExeToOriginalExe(newPath string, oldPath string) error {
