@@ -22,9 +22,12 @@ var (
 	ErrorNoNewVersionFound = fmt.Errorf("no new version found")
 )
 
-const (
-	EnvFinishUpdate = internal.EnvFinishUpdate
-)
+func IsUpdateFinished() bool {
+	if env := os.Getenv(internal.EnvFinishUpdate); env == "1" {
+		return true
+	}
+	return false
+}
 
 func CleanUp(executablePath string) error {
 	return fops.CleanUpBackup(executablePath)
