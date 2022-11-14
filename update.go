@@ -30,11 +30,17 @@ func IsFirstStartAfterUpdate() bool {
 	return false
 }
 
+// GetOldPid returns the old pid of the application, should be different from the current pid.
+func GetOldPid() string {
+	return os.Getenv(internal.EnvKillThisPid)
+}
+
 // CleanUpAfterUpdate cleans up after an update, should be called after the update.
 // It removes the backup of the old executable, executablePath is the path to the new currently running executable.
 // A retry is done if the backup file is still in use.
-func CleanUpAfterUpdate(executablePath string) error {
-	return fops.CleanUpBackup(executablePath, 1)
+func CleanUpAfterUpdate(executablePath string, oldpid string) error {
+
+	return fops.CleanUpBackup(executablePath, oldpid, 1)
 }
 
 // SelfUpdateWithLatestAndRestart updates the current executable with the latest release from github and restarts the application.
