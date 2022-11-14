@@ -22,17 +22,27 @@ var (
 	ErrorNoNewVersionFound = fmt.Errorf("no new version found")
 )
 
-func IsUpdateFinished() bool {
+// IsFirstStartAfterUpdate checks if this is the first start after an update
+func IsFirstStartAfterUpdate() bool {
 	if env := os.Getenv(internal.EnvFinishUpdate); env == "1" {
 		return true
 	}
 	return false
 }
 
-func CleanUp(executablePath string) error {
+// CleanUpAfterUpdate cleans up after an update, should be called after the update.
+// It removes the backup of the old executable, executablePath is the path to the new currently running executable.
+// A retry is done if the backup file is still in use.
+func CleanUpAfterUpdate(executablePath string) error {
 	return fops.CleanUpBackup(executablePath, 1)
 }
 
+// SelfUpdateWithLatestAndRestart updates the current executable with the latest release from github and restarts the application.
+// The latest (newest) release must have a different version than the current version.
+// name is the name of the github repository, e.g. "dhcgn/gh-update".
+// version is the current version of the application.
+// assetfilter is a regex to filter the assets of the release, e.g. "^myapp-.*windows.*zip$".
+// runningexepath is the path to the currently running executable.
 func SelfUpdateWithLatestAndRestart(name string, version string, assetfilter string, runningexepath string) error {
 	// https://api.github.com/repos/dhcgn/workplace-sync/releases
 	u, err := url.JoinPath("https://api.github.com/repos/", name, "releases")
