@@ -33,7 +33,7 @@ func TestSelfUpdateWithLatestAndRestart(t *testing.T) {
 			args: args{
 				name:           "dhcgn/workplace-sync",
 				assetfilter:    "^ws-.*zip$",
-				runningexepath: os.Args[0],
+				runningexepath: `C:\Tools\workplace-sync.exe`,
 			},
 		},
 	}

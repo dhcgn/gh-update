@@ -22,8 +22,8 @@ type FileOperations interface {
 type FileOperationsImpl struct {
 }
 
-func (FileOperationsImpl) CreateNewTempPath(p string) (newPath string, err error) {
-	return newPath + ".new.temp", nil
+func (FileOperationsImpl) CreateNewTempPath(p string) (string, error) {
+	return p + ".new.temp", nil
 }
 
 func (FileOperationsImpl) SaveTo(data []byte, path string) error {
