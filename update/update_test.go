@@ -18,25 +18,45 @@ func TestSelfUpdateWithLatestAndRestart(t *testing.T) {
 		name           string
 		assetfilter    string
 		runningexepath string
+		version        string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name        string
+		args        args
+		wantErr     bool
+		wantErrType error
 	}{
 		{
-			name: "TestSelfUpdateWithLatestAndRestart",
+			name: "update",
 			args: args{
 				name:           "owner/repo",
 				assetfilter:    "^myapp-.*windows.*zip$",
 				runningexepath: `C:\myapp.exe`,
+				version:        "v0.0.2",
 			},
+		},
+		{
+			name: "no update - same version",
+			args: args{
+				name:           "owner/repo",
+				assetfilter:    "^myapp-.*windows.*zip$",
+				runningexepath: `C:\myapp.exe`,
+				version:        "v1.2.3",
+			},
+			wantErr:     true,
+			wantErrType: ErrorNoNewVersionFound,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SelfUpdateWithLatestAndRestart(tt.args.name, tt.args.assetfilter, tt.args.runningexepath); (err != nil) != tt.wantErr {
+			if err := SelfUpdateWithLatestAndRestart(tt.args.name, tt.args.version, tt.args.assetfilter, tt.args.runningexepath); (err != nil) != tt.wantErr {
 				t.Errorf("SelfUpdateWithLatestAndRestart() error = %v, wantErr %v", err, tt.wantErr)
+
+				if tt.wantErrType != nil {
+					if err != tt.wantErrType {
+						t.Errorf("SelfUpdateWithLatestAndRestart() error = %v, wantErrType %v", err, tt.wantErrType)
+					}
+				}
 			}
 		})
 	}
@@ -92,7 +112,7 @@ func (*WebOperationsMock) GetAssetReader(url string) (data []byte, err error) {
 func (*WebOperationsMock) GetGithubRelease(url string) (*[]types.GithubReleaseResult, error) {
 	r := &[]types.GithubReleaseResult{
 		{
-			TagName:     "v0.0.0",
+			TagName:     "v1.2.3",
 			PublishedAt: time.Time{},
 			Assets: []types.Assets{
 				{

@@ -18,6 +18,10 @@ var (
 	webop internal.WebOperations  = internal.WebOperationsImpl{}
 )
 
+var (
+	ErrorNoNewVersionFound = fmt.Errorf("no new version found")
+)
+
 const (
 	EnvFinishUpdate = internal.EnvFinishUpdate
 )
@@ -26,7 +30,7 @@ func CleanUp(executablePath string) error {
 	return fops.CleanUpBackup(executablePath)
 }
 
-func SelfUpdateWithLatestAndRestart(name string, assetfilter string, runningexepath string) error {
+func SelfUpdateWithLatestAndRestart(name string, version string, assetfilter string, runningexepath string) error {
 	// https://api.github.com/repos/dhcgn/workplace-sync/releases
 	u, err := url.JoinPath("https://api.github.com/repos/", name, "releases")
 	if err != nil {
@@ -57,6 +61,10 @@ func SelfUpdateWithLatestAndRestart(name string, assetfilter string, runningexep
 
 	latestRelease := (*ghr)[0]
 	// fmt.Println(latestRelease)
+
+	if latestRelease.TagName == version {
+		return ErrorNoNewVersionFound
+	}
 
 	assets := make([]types.Assets, 0)
 	for _, asset := range latestRelease.Assets {
