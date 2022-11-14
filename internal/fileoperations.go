@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 )
 
 var _ FileOperations = (*FileOperationsImpl)(nil)
@@ -21,14 +22,28 @@ type FileOperations interface {
 	SaveTo(data []byte, path string) error
 	MoveRunningExeToBackup(p string) error
 	MoveNewExeToOriginalExe(newPath string, oldPath string) error
-	CleanUpBackup(p string) error
+	CleanUpBackup(p string, try int) error
 }
 
 type FileOperationsImpl struct {
 }
 
-func (FileOperationsImpl) CleanUpBackup(p string) error {
-	return os.Remove(p + oldfilesuffix)
+func (f FileOperationsImpl) CleanUpBackup(path string, try int) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return err
+	}
+
+	err := os.Remove(path + oldfilesuffix)
+	if err == nil {
+		return nil
+	}
+
+	if try < 5 {
+		d := time.Duration(try) * 100 * time.Millisecond
+		time.Sleep(d)
+		return f.CleanUpBackup(path, try+1)
+	}
+	return err
 }
 
 func (FileOperationsImpl) CreateNewTempPath(p string) (string, error) {

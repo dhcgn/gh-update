@@ -30,7 +30,7 @@ func IsUpdateFinished() bool {
 }
 
 func CleanUp(executablePath string) error {
-	return fops.CleanUpBackup(executablePath)
+	return fops.CleanUpBackup(executablePath, 1)
 }
 
 func SelfUpdateWithLatestAndRestart(name string, version string, assetfilter string, runningexepath string) error {
