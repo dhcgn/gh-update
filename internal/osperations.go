@@ -25,9 +25,12 @@ func (OsOperationsImpl) Restart(path string) error {
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	cmd.Env = env
-	err := cmd.Run()
-	if err == nil {
-		os.Exit(0)
-	}
-	return err
+
+	//ignore an error just start concurrently
+	go cmd.Run()
+
+	// exit the current process immediately
+	os.Exit(0)
+
+	return nil
 }

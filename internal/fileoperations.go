@@ -38,7 +38,7 @@ func (f FileOperationsImpl) CleanUpBackup(path string, try int) error {
 		return nil
 	}
 
-	if try < 5 {
+	if try < 10 {
 		d := time.Duration(try) * 100 * time.Millisecond
 		time.Sleep(d)
 		return f.CleanUpBackup(path, try+1)
