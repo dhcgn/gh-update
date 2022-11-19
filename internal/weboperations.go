@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/dhcgn/gh-update/types"
 )
@@ -16,9 +18,15 @@ type WebOperations interface {
 	GetAssetReader(url string) (data []byte, err error)
 }
 
-type WebOperationsImpl struct{}
+type WebOperationsImpl struct {
+	TestUpdateAssetPath string
+}
 
-func (WebOperationsImpl) GetAssetReader(url string) (data []byte, err error) {
+func (wo WebOperationsImpl) GetAssetReader(url string) (data []byte, err error) {
+	if wo.TestUpdateAssetPath != "" {
+		return os.ReadFile(wo.TestUpdateAssetPath)
+	}
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -32,7 +40,23 @@ func (WebOperationsImpl) GetAssetReader(url string) (data []byte, err error) {
 	return data, nil
 }
 
-func (WebOperationsImpl) GetGithubRelease(url string) (*[]types.GithubReleaseResult, error) {
+func (wo WebOperationsImpl) GetGithubRelease(url string) (*[]types.GithubReleaseResult, error) {
+	if wo.TestUpdateAssetPath != "" {
+		base := filepath.Base(wo.TestUpdateAssetPath)
+		return &[]types.GithubReleaseResult{
+			{
+				TagName: "v0.0.2",
+				Assets: []types.Assets{
+					{
+						Name:               base,
+						BrowserDownloadURL: "https://example.local/" + base,
+					},
+				},
+				PublishedAt: time.Now().AddDate(0, 0, -1),
+			},
+		}, nil
+	}
+
 	method := "GET"
 
 	client := &http.Client{}

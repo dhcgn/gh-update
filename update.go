@@ -22,6 +22,12 @@ var (
 	ErrorNoNewVersionFound = fmt.Errorf("no new version found")
 )
 
+func SetTestUpdateAssetPath(path string) {
+	webop = internal.WebOperationsImpl{
+		TestUpdateAssetPath: path,
+	}
+}
+
 // IsFirstStartAfterUpdate checks if this is the first start after an update
 func IsFirstStartAfterUpdate() bool {
 	if env := os.Getenv(internal.EnvFinishUpdate); env == "1" {
