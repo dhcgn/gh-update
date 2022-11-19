@@ -40,21 +40,25 @@ func (wo WebOperationsImpl) GetAssetReader(url string) (data []byte, err error) 
 	return data, nil
 }
 
+func (wo WebOperationsImpl) getTestData(url string) (*[]types.GithubReleaseResult, error) {
+	base := filepath.Base(wo.TestUpdateAssetPath)
+	return &[]types.GithubReleaseResult{
+		{
+			TagName: "v0.0.2",
+			Assets: []types.Assets{
+				{
+					Name:               base,
+					BrowserDownloadURL: "https://example.local/" + base,
+				},
+			},
+			PublishedAt: time.Now().AddDate(0, 0, -1),
+		},
+	}, nil
+}
+
 func (wo WebOperationsImpl) GetGithubRelease(url string) (*[]types.GithubReleaseResult, error) {
 	if wo.TestUpdateAssetPath != "" {
-		base := filepath.Base(wo.TestUpdateAssetPath)
-		return &[]types.GithubReleaseResult{
-			{
-				TagName: "v0.0.2",
-				Assets: []types.Assets{
-					{
-						Name:               base,
-						BrowserDownloadURL: "https://example.local/" + base,
-					},
-				},
-				PublishedAt: time.Now().AddDate(0, 0, -1),
-			},
-		}, nil
+		return wo.getTestData(url)
 	}
 
 	method := "GET"
