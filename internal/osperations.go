@@ -15,7 +15,7 @@ const (
 var _ OsOperations = (*OsOperationsImpl)(nil)
 
 type OsOperations interface {
-	Restart(path string) error
+	Restart(string) error
 }
 
 type OsOperationsImpl struct{}
@@ -30,13 +30,9 @@ func (OsOperationsImpl) Restart(path string) error {
 	cmd.Stdin = os.Stdin
 	cmd.Env = env
 
-	//ignore an error just start concurrently
-	go cmd.Run()
+	err := cmd.Start()
 
-	// exit the current process immediately
-	os.Exit(0)
-
-	return nil
+	return err
 }
 
 func tryKillProcess(pid string) error {
