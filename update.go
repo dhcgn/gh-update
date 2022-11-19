@@ -131,6 +131,7 @@ func SelfUpdateWithLatestAndRestart(name string, version string, assetfilter str
 	if err != nil {
 		return err
 	}
+
 	err = osps.Restart(runningexepath)
 	if err != nil {
 		return err
