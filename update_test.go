@@ -1,6 +1,7 @@
 package update
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -123,4 +124,49 @@ func (*WebOperationsMock) GetGithubRelease(url string) (*[]types.GithubReleaseRe
 		},
 	}
 	return r, nil
+}
+
+func TestGetLatestVersion(t *testing.T) {
+
+	fops = &FileOperationsMock{}
+	osps = &OsOperationsMock{}
+	webop = &WebOperationsMock{}
+
+	type args struct {
+		name        string
+		version     string
+		assetfilter string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    LatestRelease
+		wantErr bool
+	}{
+		{
+			name: "get latest version",
+			args: args{
+				name:        "owner/repo",
+				assetfilter: "^myapp-.*windows.*zip$",
+				version:     "v0.0.2",
+			},
+			want: LatestRelease{
+				Name:    "myapp-v0.0.3-windows-amd64.zip",
+				Url:     `https://myapp-v0.0.3-windows-amd64.zip`,
+				Version: "v1.2.3",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetLatestVersion(tt.args.name, tt.args.version, tt.args.assetfilter)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetLatestVersion() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetLatestVersion() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

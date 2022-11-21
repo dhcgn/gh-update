@@ -45,39 +45,41 @@ func GetOldPid() string {
 // It removes the backup of the old executable, executablePath is the path to the new currently running executable.
 // A retry is done if the backup file is still in use.
 func CleanUpAfterUpdate(executablePath string, oldpid string) error {
-
 	return fops.RemoveExecutable(executablePath, oldpid, 1)
 }
 
-// SelfUpdateWithLatestAndRestart updates the current executable with the latest release from github and restarts the application.
+type LatestRelease struct {
+	Name    string
+	Url     string
+	Version string
+}
+
+// GetLatestVersion get the latest release from github information.
 // The latest (newest) release must have a different version than the current version.
 // name is the name of the github repository, e.g. "dhcgn/gh-update".
 // version is the current version of the application.
 // assetfilter is a regex to filter the assets of the release, e.g. "^myapp-.*windows.*zip$".
-// runningexepath is the path to the currently running executable.
-func SelfUpdateWithLatestAndRestart(name string, version string, assetfilter string, runningexepath string) error {
+// The returned LatestRelease contains the name of the asset and the url to download the asset
+// and can be used with the func SelfUpdateAndRestart.
+func GetLatestVersion(name string, version string, assetfilter string) (LatestRelease, error) {
 	// https://api.github.com/repos/dhcgn/workplace-sync/releases
 	u, err := url.JoinPath("https://api.github.com/repos/", name, "releases")
 	if err != nil {
-		return err
+		return LatestRelease{}, err
 	}
 
 	assetRegex, err := regexp.Compile(assetfilter)
 	if err != nil {
-		return err
-	}
-
-	if os.Stat(runningexepath); os.IsNotExist(err) {
-		return err
+		return LatestRelease{}, err
 	}
 
 	ghr, err := webop.GetGithubRelease(u)
 	if err != nil {
-		return err
+		return LatestRelease{}, err
 	}
 
 	if len(*ghr) == 0 {
-		return fmt.Errorf("no releases found with default branch")
+		return LatestRelease{}, fmt.Errorf("no releases found with default branch")
 	}
 
 	slices.SortFunc(*ghr, func(i, j types.GithubReleaseResult) bool {
@@ -85,10 +87,9 @@ func SelfUpdateWithLatestAndRestart(name string, version string, assetfilter str
 	})
 
 	latestRelease := (*ghr)[0]
-	// fmt.Println(latestRelease)
 
 	if latestRelease.TagName == version {
-		return ErrorNoNewVersionFound
+		return LatestRelease{}, ErrorNoNewVersionFound
 	}
 
 	assets := make([]types.Assets, 0)
@@ -99,21 +100,29 @@ func SelfUpdateWithLatestAndRestart(name string, version string, assetfilter str
 	}
 
 	if len(assets) == 0 {
-		return fmt.Errorf("no assets found with filter %s in version %v", assetfilter, latestRelease.TagName)
+		return LatestRelease{}, fmt.Errorf("no assets found with filter %s in version %v", assetfilter, latestRelease.TagName)
 	}
 	if len(assets) > 1 {
-		return fmt.Errorf("multiple assets found with filter %s in version %v", assetfilter, latestRelease.TagName)
+		return LatestRelease{}, fmt.Errorf("multiple assets found with filter %s in version %v", assetfilter, latestRelease.TagName)
 	}
 
-	asset := assets[0]
-	// fmt.Println("Asset:", asset)
+	return LatestRelease{
+		Name:    assets[0].Name,
+		Url:     assets[0].BrowserDownloadURL,
+		Version: latestRelease.TagName,
+	}, nil
+}
 
-	assetData, err := webop.GetAssetReader(asset.BrowserDownloadURL)
+// SelfUpdateAndRestart updates the current executable with the latest release from github and restarts the application.
+// LatestRelease is the result of GetLatestVersion.
+// runningexepath is the path to the currently running executable.
+func SelfUpdateAndRestart(latest LatestRelease, runningexepath string) error {
+	assetData, err := webop.GetAssetReader(latest.Url)
 	if err != nil {
 		return err
 	}
 
-	if strings.HasSuffix(asset.Name, ".zip") {
+	if strings.HasSuffix(latest.Name, ".zip") {
 		assetData, err = fops.Unzip(assetData)
 		if err != nil {
 			return err
@@ -144,4 +153,19 @@ func SelfUpdateWithLatestAndRestart(name string, version string, assetfilter str
 	}
 
 	return nil
+}
+
+// SelfUpdateWithLatestAndRestart updates the current executable with the latest release from github and restarts the application.
+// The latest (newest) release must have a different version than the current version.
+// name is the name of the github repository, e.g. "dhcgn/gh-update".
+// version is the current version of the application.
+// assetfilter is a regex to filter the assets of the release, e.g. "^myapp-.*windows.*zip$".
+// runningexepath is the path to the currently running executable.
+func SelfUpdateWithLatestAndRestart(name string, version string, assetfilter string, runningexepath string) error {
+	latest, err := GetLatestVersion(name, version, assetfilter)
+	if err != nil {
+		return err
+	}
+
+	return SelfUpdateAndRestart(latest, runningexepath)
 }
