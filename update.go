@@ -19,7 +19,9 @@ var (
 )
 
 var (
-	ErrorNoNewVersionFound = fmt.Errorf("no new version found")
+	ErrorNoNewVersionFound     = fmt.Errorf("no new version found")
+	ErrorLatestNotValid        = fmt.Errorf("latest release not valid")
+	ErrorRunningExePathIsEmpty = fmt.Errorf("runningexepath is empty")
 )
 
 func SetTestUpdateAssetPath(path string) {
@@ -117,6 +119,14 @@ func GetLatestVersion(name string, version string, assetfilter string) (LatestRe
 // LatestRelease is the result of GetLatestVersion.
 // runningexepath is the path to the currently running executable.
 func SelfUpdateAndRestart(latest LatestRelease, runningexepath string) error {
+	if latest.Version == "" || latest.Url == "" || latest.Name == "" {
+		return ErrorLatestNotValid
+	}
+
+	if runningexepath == "" {
+		return ErrorRunningExePathIsEmpty
+	}
+
 	assetData, err := webop.GetAssetReader(latest.Url)
 	if err != nil {
 		return err

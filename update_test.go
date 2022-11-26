@@ -170,3 +170,68 @@ func TestGetLatestVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestSelfUpdateAndRestart(t *testing.T) {
+
+	fops = &FileOperationsMock{}
+	osps = &OsOperationsMock{}
+	webop = &WebOperationsMock{}
+
+	type args struct {
+		latest         LatestRelease
+		runningexepath string
+	}
+	tests := []struct {
+		name          string
+		args          args
+		wantErr       bool
+		wantErrorType error
+	}{
+		{
+			name: "Empty LatestRelease",
+			args: args{
+				latest:         LatestRelease{},
+				runningexepath: "",
+			},
+			wantErr:       true,
+			wantErrorType: ErrorLatestNotValid,
+		},
+		{
+			name: "Set LatestRelease but ErrorRunningExePathIsEmpty",
+			args: args{
+				latest: LatestRelease{
+					Name:    "myapp-v0.0.3-windows-amd64.zip",
+					Url:     `https://myapp-v0.0.3-windows-amd64.zip`,
+					Version: "v1.2.3",
+				},
+				runningexepath: "",
+			},
+			wantErr:       true,
+			wantErrorType: ErrorRunningExePathIsEmpty,
+		},
+		{
+			name: "Not Error",
+			args: args{
+				latest: LatestRelease{
+					Name:    "myapp-v0.0.3-windows-amd64.zip",
+					Url:     `https://myapp-v0.0.3-windows-amd64.zip`,
+					Version: "v1.2.3",
+				},
+				runningexepath: "myapp.exe",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := SelfUpdateAndRestart(tt.args.latest, tt.args.runningexepath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SelfUpdateAndRestart() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if err != nil && tt.wantErrorType != nil && err != tt.wantErrorType {
+				t.Errorf("SelfUpdateAndRestart() error = %v, wantErrorType %v", err, tt.wantErrorType)
+			}
+		})
+	}
+}
