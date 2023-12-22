@@ -9,7 +9,6 @@ import (
 
 	"github.com/dhcgn/gh-update/internal"
 	"github.com/dhcgn/gh-update/types"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -65,7 +64,7 @@ type LatestRelease struct {
 // and can be used with the func SelfUpdateAndRestart.
 func GetLatestVersion(name string, version string, assetfilter string) (LatestRelease, error) {
 	// https://api.github.com/repos/dhcgn/workplace-sync/releases
-	u, err := url.JoinPath("https://api.github.com/repos/", name, "releases")
+	u, err := url.JoinPath("https://api.github.com/repos/", name, "releases", "latest")
 	if err != nil {
 		return LatestRelease{}, err
 	}
@@ -75,20 +74,10 @@ func GetLatestVersion(name string, version string, assetfilter string) (LatestRe
 		return LatestRelease{}, err
 	}
 
-	ghr, err := webop.GetGithubRelease(u)
+	latestRelease, err := webop.GetGithubRelease(u)
 	if err != nil {
 		return LatestRelease{}, err
 	}
-
-	if len(*ghr) == 0 {
-		return LatestRelease{}, fmt.Errorf("no releases found with default branch")
-	}
-
-	slices.SortFunc(*ghr, func(i, j types.GithubReleaseResult) bool {
-		return i.PublishedAt.After(j.PublishedAt)
-	})
-
-	latestRelease := (*ghr)[0]
 
 	if latestRelease.TagName == version {
 		return LatestRelease{}, ErrorNoNewVersionFound

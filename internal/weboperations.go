@@ -14,7 +14,7 @@ import (
 var _ WebOperations = (*WebOperationsImpl)(nil)
 
 type WebOperations interface {
-	GetGithubRelease(url string) (*[]types.GithubReleaseResult, error)
+	GetGithubRelease(url string) (*types.GithubReleaseResult, error)
 	GetAssetReader(url string) (data []byte, err error)
 }
 
@@ -40,10 +40,10 @@ func (wo WebOperationsImpl) GetAssetReader(url string) (data []byte, err error) 
 	return data, nil
 }
 
-func (wo WebOperationsImpl) getTestData(url string) (*[]types.GithubReleaseResult, error) {
+func (wo WebOperationsImpl) getTestData(url string) (*types.GithubReleaseResult, error) {
 	base := filepath.Base(wo.TestUpdateAssetPath)
-	return &[]types.GithubReleaseResult{
-		{
+	return &types.GithubReleaseResult{
+
 			TagName: "v0.0.2",
 			Assets: []types.Assets{
 				{
@@ -53,10 +53,10 @@ func (wo WebOperationsImpl) getTestData(url string) (*[]types.GithubReleaseResul
 			},
 			PublishedAt: time.Now().AddDate(0, 0, -1),
 		},
-	}, nil
+		nil
 }
 
-func (wo WebOperationsImpl) GetGithubRelease(url string) (*[]types.GithubReleaseResult, error) {
+func (wo WebOperationsImpl) GetGithubRelease(url string) (*types.GithubReleaseResult, error) {
 	if wo.TestUpdateAssetPath != "" {
 		return wo.getTestData(url)
 	}
@@ -85,7 +85,7 @@ func (wo WebOperationsImpl) GetGithubRelease(url string) (*[]types.GithubRelease
 	if err != nil {
 		return nil, err
 	}
-	ghr := &[]types.GithubReleaseResult{}
+	ghr := &types.GithubReleaseResult{}
 	err = json.Unmarshal(body, &ghr)
 	if err != nil {
 		return nil, err
