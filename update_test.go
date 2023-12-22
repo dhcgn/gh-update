@@ -110,16 +110,14 @@ func (*WebOperationsMock) GetAssetReader(url string) (data []byte, err error) {
 }
 
 // GetGithubRelease implements internal.WebOperations
-func (*WebOperationsMock) GetGithubRelease(url string) (*[]types.GithubReleaseResult, error) {
-	r := &[]types.GithubReleaseResult{
-		{
-			TagName:     "v1.2.3",
-			PublishedAt: time.Time{},
-			Assets: []types.Assets{
-				{
-					Name:               "myapp-v0.0.3-windows-amd64.zip",
-					BrowserDownloadURL: "https://myapp-v0.0.3-windows-amd64.zip",
-				},
+func (*WebOperationsMock) GetGithubRelease(url string) (*types.GithubReleaseResult, error) {
+	r := &types.GithubReleaseResult{
+		TagName:     "v1.2.3",
+		PublishedAt: time.Time{},
+		Assets: []types.Assets{
+			{
+				Name:               "myapp-v0.0.3-windows-amd64.zip",
+				BrowserDownloadURL: "https://myapp-v0.0.3-windows-amd64.zip",
 			},
 		},
 	}
