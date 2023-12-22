@@ -1,5 +1,5 @@
 module github.com/dhcgn/gh-update
 
-go 1.19
+go 1.21
 
-require golang.org/x/exp v0.0.0-20221106115401-f9659909a136
+require golang.org/x/exp v0.0.0-20231219180239-dc181d75b848
